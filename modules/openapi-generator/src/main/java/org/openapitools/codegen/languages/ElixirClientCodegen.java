@@ -570,12 +570,18 @@ public class ElixirClientCodegen extends DefaultCodegen {
      */
     @Override
     public String getTypeDeclaration(Schema p) {
-        if (ModelUtils.isArraySchema(p)) {
+        if (p == null) {
+            return "any()";
+        } else if (ModelUtils.isArraySchema(p)) {
             Schema inner = ModelUtils.getSchemaItems(p);
             return "[" + getTypeDeclaration(inner) + "]";
         } else if (ModelUtils.isMapSchema(p)) {
-            Schema inner = ModelUtils.getAdditionalProperties(p);
-            return "%{optional(String.t) => " + getTypeDeclaration(inner) + "}";
+            String inner = getTypeDeclaration(ModelUtils.getAdditionalProperties(p));
+            if (inner == null || inner.trim().isEmpty()) {
+                return "%{optional(String.t) => any() }";
+            } else {
+                return "%{optional(String.t) => " + inner + "}";
+            }
         } else if (ModelUtils.isPasswordSchema(p)) {
             return "String.t";
         } else if (ModelUtils.isEmailSchema(p)) {
@@ -602,8 +608,11 @@ public class ElixirClientCodegen extends DefaultCodegen {
             switch (super.getTypeDeclaration(p)) {
                 case "String":
                     return "String.t";
-                default:
+                case "any()":
+                    return "any()";
+                default: {
                     return this.moduleName + ".Model." + super.getTypeDeclaration(p) + ".t";
+                }
             }
         } else if (ModelUtils.isFileSchema(p)) {
             return "String.t";
@@ -703,7 +712,9 @@ public class ElixirClientCodegen extends DefaultCodegen {
                 return "false";
             } else if (isArray && languageSpecificPrimitives().contains(baseType)) {
                 return "[]";
-            }
+            }// else if ("any()".equals(baseType)) {
+            //    return "any()";
+            //}
 
             StringBuilder sb = new StringBuilder();
             sb.append(moduleName);
@@ -844,6 +855,12 @@ public class ElixirClientCodegen extends DefaultCodegen {
             if (isPrimitive || "String.t".equals(baseType)) {
                 return baseType;
             }
+            if ("any()".equals(baseType)) {
+                return "any()";
+            }
+            if ("map()".equals(baseType)) {
+                return "map()";
+            }
             if (!baseType.startsWith(moduleName + ".Model.")) {
                 baseType = moduleName + ".Model." + baseType;
             }
@@ -875,6 +892,7 @@ public class ElixirClientCodegen extends DefaultCodegen {
             if (property == null) {
                 LOGGER.error(
                         "CodegenProperty cannot be null. Please report the issue to https://github.com/openapitools/openapi-generator with the spec");
+                sb.append("any()");
             } else if (property.isArray) {
                 sb.append("list(");
                 buildTypespec(property.items, sb);
