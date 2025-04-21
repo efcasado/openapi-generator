@@ -1,0 +1,51 @@
+openapi: 3.0.0
+
+info:
+  title: Map Schema Examples (OpenAPI 3.0)
+  version: 1.0.0
+
+paths: {}
+
+components:
+  schemas:
+    # 1. Map of strings
+    MapOfStrings:
+      type: object
+      additionalProperties:
+        type: string
+
+    # 2. Map of complex objects
+    MapOfObjects:
+      type: object
+      additionalProperties:
+        type: object
+        properties:
+          value:
+            type: integer
+        required:
+          - value
+
+    # 3. Map with arbitrary values
+    ExplicitMapOfAny:
+      type: object
+      additionalProperties: true
+
+    # 4. Map with arbitrary values (implicit additionalProperties: true)
+    ImplicitMapOfAny:
+      type: object
+
+    # 5. Hybrid map combining a fixed field and dynamic number values
+    HybridMap:
+      type: object
+      properties:
+        fixedKey:
+          type: string
+      additionalProperties:
+        type: number
+
+    # 6. Not a map (implicit additionalProperties: false)
+    Object:
+      type: object
+      properties:
+        value:
+          type: integer
