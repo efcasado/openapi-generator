@@ -875,6 +875,7 @@ public class ElixirClientCodegen extends DefaultCodegen {
             if (property == null) {
                 LOGGER.error(
                         "CodegenProperty cannot be null. Please report the issue to https://github.com/openapitools/openapi-generator with the spec");
+                sb.append("any()");
             } else if (property.isArray) {
                 sb.append("list(");
                 buildTypespec(property.items, sb);
